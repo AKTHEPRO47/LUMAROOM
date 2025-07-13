@@ -1,0 +1,2172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUMA ROOM - Game Dev Collab</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Three.js for 3D graphics -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- OrbitControls for camera interaction -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
+
+        /* CSS Variables for Theming */
+        :root {
+            /* Dark Mode Defaults */
+            --bg-primary: linear-gradient(135deg, #0a0a0a 0%, #1a0a2a 100%);
+            --bg-header: rgba(10, 10, 30, 0.95);
+            --bg-sidebar: rgba(10, 10, 30, 0.85);
+            --bg-main-content: rgba(20, 20, 50, 0.75);
+            --bg-card: rgba(20, 20, 50, 0.85);
+            --bg-list-item: rgba(30, 30, 60, 0.8);
+            --bg-chat-messages: rgba(15, 15, 40, 0.7);
+            --bg-chat-footer: rgba(10, 10, 30, 0.9);
+            --bg-message-box: linear-gradient(145deg, #1a0a2a, #2a0a3a);
+            --bg-modal-overlay: rgba(0, 0, 0, 0.9);
+            --bg-reaction-btn: rgba(255, 255, 255, 0.05);
+            --bg-notification-toast: rgba(0, 255, 255, 0.18);
+
+            --text-primary: #e0e0e0;
+            --text-muted: #a0ffff; /* Light cyan for muted text in dark mode */
+            --text-info-custom: #00ffff;
+            --text-placeholder: rgba(160, 255, 255, 0.7);
+
+            --border-color-primary: #00ffff;
+            --border-color-secondary: rgba(0, 255, 255, 0.5);
+            --border-color-card: rgba(0, 255, 255, 0.4);
+            --border-color-chat: rgba(0, 255, 255, 0.2);
+            --border-color-active-room: #00ffff;
+            --border-color-btn-secondary: #5a5a7a;
+
+            --shadow-header: 0 4px 20px rgba(0, 255, 255, 0.4);
+            --shadow-sidebar: 0 0 20px rgba(0, 255, 255, 0.3);
+            --shadow-sidebar-hover: 0 0 30px rgba(0, 255, 255, 0.6);
+            --shadow-main-content: 0 0 40px rgba(0, 255, 255, 0.25);
+            --shadow-main-content-hover: 0 0 50px rgba(0, 255, 255, 0.4);
+            --shadow-form-control-inset: inset 0 2px 5px rgba(0, 255, 255, 0.15);
+            --shadow-form-control-focus: inset 0 2px 5px rgba(0, 255, 255, 0.2), 0 0 10px rgba(0, 255, 255, 0.5);
+            --shadow-message-box: 0 0 40px rgba(0, 255, 255, 0.8);
+            --shadow-modal: 0 0 50px rgba(0, 255, 255, 1);
+            --shadow-notification-toast: 0 6px 15px rgba(0, 255, 255, 0.4);
+            --shadow-reaction-btn-hover: 0 0 10px rgba(0, 255, 255, 0.5);
+            --shadow-text-glow: 0 0 8px rgba(0, 255, 255, 0.8);
+            --shadow-section-header: 0 0 5px rgba(0, 255, 255, 0.5);
+
+            --btn-primary-bg: #00ffff;
+            --btn-primary-border: #00ffff;
+            --btn-primary-color: #0a0a0a;
+            --btn-primary-hover-bg: #00e0e0;
+            --btn-primary-hover-border: #00e0e0;
+
+            --btn-secondary-bg: #3a3a5a;
+            --btn-secondary-border: #5a5a7a;
+            --btn-secondary-color: #e0e0e0;
+            --btn-secondary-hover-bg: #4a4a6a;
+            --btn-secondary-hover-border: #6a6a8a;
+
+            --btn-info-bg: #00bfff;
+            --btn-info-border: #00bfff;
+            --btn-info-color: #0a0a0a;
+            --btn-info-hover-bg: #0099cc;
+            --btn-info-hover-border: #0099cc;
+
+            --btn-success-bg: #00ff00;
+            --btn-success-border: #00ff00;
+            --btn-success-color: #0a0a0a;
+            --btn-success-hover-bg: #00e000;
+            --btn-success-hover-border: #00e000;
+
+            --btn-warning-bg: #ffff00;
+            --btn-warning-border: #ffff00;
+            --btn-warning-color: #0a0a0a;
+            --btn-warning-hover-bg: #e0e000;
+            --btn-warning-hover-border: #e0e000;
+        }
+
+        /* Light Mode */
+        body.light-mode {
+            --bg-primary: linear-gradient(135deg, #e0e0e0 0%, #f0f0f0 100%);
+            --bg-header: rgba(255, 255, 255, 0.95);
+            --bg-sidebar: rgba(240, 240, 250, 0.85);
+            --bg-main-content: rgba(250, 250, 255, 0.9);
+            --bg-card: rgba(250, 250, 255, 0.9);
+            --bg-list-item: rgba(230, 230, 240, 0.8);
+            --bg-chat-messages: rgba(220, 220, 230, 0.7);
+            --bg-chat-footer: rgba(240, 240, 250, 0.9);
+            --bg-message-box: linear-gradient(145deg, #f0f0f0, #ffffff);
+            --bg-modal-overlay: rgba(255, 255, 255, 0.8);
+            --bg-reaction-btn: rgba(0, 0, 0, 0.05);
+            --bg-notification-toast: rgba(0, 191, 255, 0.1);
+
+            --text-primary: #1a1a1a;
+            --text-muted: #444444; /* Darker grey for muted text in light mode */
+            --text-info-custom: #007bff;
+            --text-placeholder: rgba(80, 80, 80, 0.7);
+
+            --border-color-primary: #007bff;
+            --border-color-secondary: rgba(0, 123, 255, 0.5);
+            --border-color-card: rgba(0, 123, 255, 0.4);
+            --border-color-chat: rgba(0, 123, 255, 0.2);
+            --border-color-active-room: #007bff;
+            --border-color-btn-secondary: #cccccc;
+
+            --shadow-header: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --shadow-sidebar: 0 0 20px rgba(0, 0, 0, 0.1);
+            --shadow-sidebar-hover: 0 0 30px rgba(0, 0, 0, 0.2);
+            --shadow-main-content: 0 0 40px rgba(0, 0, 0, 0.15);
+            --shadow-main-content-hover: 0 0 50px rgba(0, 0, 0, 0.25);
+            --shadow-form-control-inset: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+            --shadow-form-control-focus: inset 0 2px 5px rgba(0, 0, 0, 0.1), 0 0 10px rgba(0, 123, 255, 0.3);
+            --shadow-message-box: 0 0 40px rgba(0, 0, 0, 0.2);
+            --shadow-modal: 0 0 50px rgba(0, 0, 0, 0.3);
+            --shadow-notification-toast: 0 6px 15px rgba(0, 0, 0, 0.1);
+            --shadow-reaction-btn-hover: 0 0 10px rgba(0, 123, 255, 0.3);
+            --shadow-text-glow: none; /* No glow in light mode */
+            --shadow-section-header: none; /* No glow in light mode */
+
+            --btn-primary-bg: #007bff;
+            --btn-primary-border: #007bff;
+            --btn-primary-color: #ffffff;
+            --btn-primary-hover-bg: #0056b3;
+            --btn-primary-hover-border: #0056b3;
+
+            --btn-secondary-bg: #e9ecef;
+            --btn-secondary-border: #ced4da;
+            --btn-secondary-color: #343a40;
+            --btn-secondary-hover-bg: #dae0e5;
+            --btn-secondary-hover-border: #c6cbcf;
+
+            --btn-info-bg: #17a2b8;
+            --btn-info-border: #17a2b8;
+            --btn-info-color: #ffffff;
+            --btn-info-hover-bg: #138496;
+            --btn-info-hover-border: #138496;
+
+            --btn-success-bg: #28a745;
+            --btn-success-border: #28a745;
+            --btn-success-color: #0a0a0a;
+            --btn-success-hover-bg: #218838;
+            --btn-success-hover-border: #218838;
+
+            --btn-warning-bg: #ffc107;
+            --btn-warning-border: #ffc107;
+            --btn-warning-color: #0a0a0a;
+            --btn-warning-hover-bg: #e0a800;
+            --btn-warning-hover-border: #e0a800;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            transition: background 0.5s ease, color 0.5s ease;
+        }
+        body {
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .luma-room-app {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Animated Background Effect */
+        .luma-room-app::before, .luma-room-app::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .luma-room-app::before {
+            background: radial-gradient(circle at center, rgba(0, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0) 70%);
+            animation: pulse-glow 15s infinite alternate ease-in-out;
+        }
+        .luma-room-app::after {
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0, 191, 255, 0.06) 0%, rgba(0, 0, 0, 0) 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 255, 0, 0.06) 0%, rgba(0, 0, 0, 0) 50%);
+            animation: move-gradients 20s infinite linear;
+        }
+        body.light-mode .luma-room-app::before {
+            background: radial-gradient(circle at center, rgba(0, 123, 255, 0.05) 0%, rgba(255, 255, 255, 0) 70%);
+        }
+        body.light-mode .luma-room-app::after {
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(170, 0, 255, 0.03) 0%, rgba(255, 255, 255, 0) 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 170, 255, 0.03) 0%, rgba(255, 255, 255, 0) 50%);
+        }
+
+        @keyframes pulse-glow {
+            0% { transform: scale(1); opacity: 0.08; }
+            50% { transform: scale(1.05); opacity: 0.15; }
+            100% { transform: scale(1); opacity: 0.08; }
+        }
+        @keyframes move-gradients {
+            0% { background-position: 0% 0%, 100% 100%; }
+            100% { background-position: 100% 100%, 0% 0%; }
+        }
+
+        .header {
+            background-color: var(--bg-header);
+            border-bottom: 1px solid var(--border-color-primary);
+            box-shadow: var(--shadow-header);
+            padding: 18px;
+            text-align: center;
+            border-radius: 0 0 20px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            transition: background-color 0.5s ease, box-shadow 0.5s ease, border-color 0.5s ease;
+        }
+        .header h1 {
+            font-weight: 700;
+            text-shadow: var(--shadow-text-glow);
+            transition: text-shadow 0.5s ease;
+        }
+        .header small {
+            font-weight: 300;
+            color: var(--text-muted) !important;
+            transition: color 0.5s ease;
+        }
+
+        .main-layout {
+            display: flex;
+            flex-grow: 1;
+            padding: 15px;
+            gap: 15px;
+        }
+        .sidebar, .right-sidebar {
+            background-color: var(--bg-sidebar);
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: var(--shadow-sidebar);
+            position: relative;
+            z-index: 10;
+            border-radius: 15px;
+            border: 1px solid var(--border-color-secondary);
+            transition: all 0.3s ease;
+        }
+        .sidebar:hover, .right-sidebar:hover {
+            box-shadow: var(--shadow-sidebar-hover);
+        }
+        .sidebar {
+            min-width: 250px;
+            max-width: 280px;
+            flex-basis: 250px;
+            flex-shrink: 0;
+        }
+        .right-sidebar {
+            min-width: 300px;
+            max-width: 350px;
+            flex-basis: 300px;
+            flex-shrink: 0;
+            border-left: 1px solid var(--border-color-primary);
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 5;
+            background-color: var(--bg-main-content);
+            border-radius: 20px;
+            box-shadow: var(--shadow-main-content);
+            border: 1px solid var(--border-color-secondary);
+            transition: all 0.3s ease;
+        }
+        .main-content:hover {
+            box-shadow: var(--shadow-main-content-hover);
+        }
+
+        .btn-custom-primary, .btn-custom-secondary, .btn-custom-info, .btn-custom-success, .btn-custom-warning {
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border-radius: 12px;
+            padding: 12px 25px;
+            font-weight: bold;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+            border-width: 2px;
+        }
+        .btn-custom-primary:hover, .btn-custom-secondary:hover, .btn-custom-info:hover, .btn-custom-success:hover, .btn-custom-warning:hover {
+            transform: translateY(-5px) scale(1.04);
+            box-shadow: 0 8px 18px rgba(0, 255, 255, 0.6);
+            filter: brightness(1.1);
+        }
+        body.light-mode .btn-custom-primary:hover,
+        body.light-mode .btn-custom-secondary:hover,
+        body.light-mode .btn-custom-info:hover,
+        body.light-mode .btn-custom-success:hover,
+        body.light-mode .btn-custom-warning:hover {
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2); /* Adjust shadow for light mode */
+        }
+
+        .btn-custom-primary { background-color: var(--btn-primary-bg); border-color: var(--btn-primary-border); color: var(--btn-primary-color); }
+        .btn-custom-primary:hover { background-color: var(--btn-primary-hover-bg); border-color: var(--btn-primary-hover-border); }
+        .btn-custom-secondary { background-color: var(--btn-secondary-bg); border-color: var(--btn-secondary-border); color: var(--btn-secondary-color); }
+        .btn-custom-secondary:hover { background-color: var(--btn-secondary-hover-bg); border-color: var(--btn-secondary-hover-border); }
+        .btn-custom-info { background-color: var(--btn-info-bg); border-color: var(--btn-info-border); color: var(--btn-info-color); }
+        .btn-custom-info:hover { background-color: var(--btn-info-hover-bg); border-color: var(--btn-info-hover-border); }
+        .btn-custom-success { background-color: var(--btn-success-bg); border-color: var(--btn-success-border); color: var(--btn-success-color); }
+        .btn-custom-success:hover { background-color: var(--btn-success-hover-bg); border-color: var(--btn-success-hover-border); }
+        .btn-custom-warning { background-color: var(--btn-warning-bg); border-color: var(--btn-warning-border); color: var(--btn-warning-color); }
+        .btn-warning:hover { background-color: var(--btn-warning-hover-bg); border-color: var(--btn-warning-hover-border); }
+
+        .form-control, .card, .alert {
+            border-radius: 12px;
+            background-color: var(--bg-card) !important;
+            color: var(--text-primary) !important;
+            border: 1px solid var(--border-color-card);
+            box-shadow: var(--shadow-form-control-inset);
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: var(--border-color-primary) !important;
+            box-shadow: var(--shadow-form-control-focus) !important;
+            background-color: rgba(25, 25, 55, 0.9) !important; /* Slightly darker on focus */
+        }
+        body.light-mode .form-control:focus {
+            background-color: rgba(245, 245, 255, 0.9) !important;
+        }
+        .form-control::placeholder {
+            color: var(--text-placeholder);
+        }
+        .card-header {
+            background-color: rgba(0, 255, 255, 0.25) !important;
+            border-bottom: 1px solid var(--border-color-primary);
+            color: var(--text-info-custom);
+            font-weight: bold;
+            border-radius: 11px 11px 0 0;
+            padding: 15px;
+            font-size: 1.1em;
+            transition: background-color 0.5s ease, border-color 0.5s ease, color 0.5s ease;
+        }
+        body.light-mode .card-header {
+            background-color: rgba(0, 123, 255, 0.1) !important;
+        }
+        .text-info-custom { color: var(--text-info-custom) !important; transition: color 0.5s ease; }
+        .active-room {
+            border: 3px solid var(--border-color-active-room) !important;
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.9);
+            background-color: rgba(0, 255, 255, 0.2) !important;
+            transform: scale(1.04);
+        }
+        body.light-mode .active-room {
+            box-shadow: 0 0 25px rgba(0, 123, 255, 0.5);
+            background-color: rgba(0, 123, 255, 0.1) !important;
+        }
+        .active-room:hover {
+            transform: scale(1.06);
+        }
+        .list-group-item {
+            background-color: var(--bg-list-item) !important;
+            border: 1px solid var(--border-color-chat) !important;
+            transition: all 0.2s ease;
+        }
+        .list-group-item:hover {
+            background-color: rgba(40, 40, 70, 0.9) !important;
+            transform: translateX(3px);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+        body.light-mode .list-group-item:hover {
+            background-color: rgba(210, 210, 220, 0.9) !important;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-box-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-modal-overlay);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: background-color 0.5s ease;
+        }
+        .message-box {
+            background: var(--bg-message-box);
+            border: 2px solid var(--border-color-primary);
+            border-radius: 20px;
+            padding: 45px;
+            text-align: center;
+            color: var(--text-primary);
+            box-shadow: var(--shadow-message-box);
+            max-width: 500px;
+            animation: fade-in 0.4s ease-out;
+            position: relative;
+            overflow: hidden;
+            transition: background 0.5s ease, border-color 0.5s ease, color 0.5s ease, box-shadow 0.5s ease;
+        }
+        .message-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.1) 0%, transparent 70%);
+            animation: rotate-glow 10s infinite linear;
+            z-index: -1;
+        }
+        body.light-mode .message-box::before {
+            background: radial-gradient(circle, rgba(0, 123, 255, 0.05) 0%, transparent 70%);
+        }
+        @keyframes rotate-glow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .message-box p {
+            margin-bottom: 30px;
+            font-size: 1.2em;
+            font-weight: 400;
+        }
+        @keyframes fade-in {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .main-layout {
+                flex-direction: column;
+                padding: 10px;
+                gap: 10px;
+            }
+            .sidebar, .right-sidebar {
+                width: 100%;
+                max-width: none;
+                max-height: 250px;
+                border-right: none;
+                border-left: none;
+                border-bottom: 1px solid var(--border-color-primary);
+                box-shadow: none;
+                margin: 0;
+                border-radius: 15px;
+            }
+            .right-sidebar {
+                border-top: 1px solid var(--border-color-primary);
+            }
+            .main-content {
+                margin: 10px 0;
+                border-radius: 15px;
+                padding: 20px;
+            }
+            .header {
+                border-radius: 0;
+                padding: 15px;
+            }
+        }
+        @media (max-width: 576px) {
+            .sidebar, .right-sidebar {
+                max-height: 180px;
+                padding: 15px;
+            }
+            .main-content {
+                padding: 15px;
+            }
+            .btn-custom-primary, .btn-custom-secondary, .btn-custom-info, .btn-custom-success, .btn-custom-warning {
+                padding: 10px 15px;
+                font-size: 0.9em;
+            }
+            .header h1 {
+                font-size: 1.8em;
+            }
+            .header small {
+                font-size: 0.7em !important;
+            }
+            .mode-section-header {
+                font-size: 1.2em;
+                margin-bottom: 15px;
+            }
+        }
+
+        /* Codename Modal Styling */
+        .codename-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-modal-overlay);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: background-color 0.5s ease;
+        }
+        .codename-modal {
+            background: var(--bg-message-box);
+            border: 2px solid var(--border-color-primary);
+            border-radius: 20px;
+            padding: 35px;
+            text-align: center;
+            color: var(--text-primary);
+            box-shadow: var(--shadow-modal);
+            max-width: 550px;
+            animation: fade-in 0.4s ease-out;
+            position: relative;
+            overflow: hidden;
+            transition: background 0.5s ease, border-color 0.5s ease, color 0.5s ease, box-shadow 0.5s ease;
+        }
+        .codename-modal::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.1) 0%, transparent 70%);
+            animation: rotate-glow 12s infinite reverse linear;
+            z-index: -1;
+        }
+        body.light-mode .codename-modal::before {
+            background: radial-gradient(circle, rgba(0, 123, 255, 0.05) 0%, transparent 70%);
+        }
+        .codename-modal h4 {
+            font-weight: 700;
+            text-shadow: var(--shadow-text-glow);
+            transition: text-shadow 0.5s ease;
+        }
+        .codename-modal p {
+            font-size: 1.1em;
+            margin-bottom: 25px;
+        }
+        .codename-modal input {
+            margin-bottom: 20px;
+            padding: 12px;
+            font-size: 1.1em;
+            border-radius: 10px;
+        }
+
+        /* Notification Toast Styling */
+        #notification-container {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            z-index: 10001;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        .notification-toast {
+            background-color: var(--bg-notification-toast);
+            backdrop-filter: blur(5px);
+            border: 1px solid var(--border-color-primary);
+            color: var(--text-primary);
+            padding: 12px 22px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-notification-toast);
+            opacity: 0;
+            transform: translateX(120%);
+            animation: slide-in-fade-out 5s forwards cubic-bezier(0.25, 0.8, 0.25, 1);
+            min-width: 280px;
+            max-width: 380px;
+            text-align: left;
+            font-size: 0.95em;
+            transition: background-color 0.5s ease, border-color 0.5s ease, color 0.5s ease, box-shadow 0.5s ease;
+        }
+
+        @keyframes slide-in-fade-out {
+            0% { opacity: 0; transform: translateX(120%); }
+            10% { opacity: 1; transform: translateX(0); }
+            90% { opacity: 1; transform: translateX(0); }
+            100% { opacity: 0; transform: translateX(120%); }
+        }
+
+        /* Floating Reaction Effect */
+        .floating-reaction {
+            position: absolute;
+            font-size: 3em;
+            opacity: 0;
+            animation: float-up-fade-out 2.5s forwards ease-out;
+            pointer-events: none;
+            z-index: 100;
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+        }
+
+        @keyframes float-up-fade-out {
+            0% { opacity: 1; transform: translateY(0) scale(0.8); }
+            40% { opacity: 1; transform: translateY(-60px) scale(1.3); }
+            100% { opacity: 0; transform: translateY(-120px) scale(1.8); }
+        }
+
+        /* Section Headers for Modes */
+        .mode-section-header {
+            border-bottom: 1px solid rgba(0, 255, 255, 0.6);
+            padding-bottom: 12px;
+            margin-bottom: 25px;
+            color: var(--text-info-custom);
+            font-size: 1.6em;
+            font-weight: 700;
+            text-shadow: var(--shadow-section-header);
+            transition: border-color 0.5s ease, color 0.5s ease, text-shadow 0.5s ease;
+        }
+        .mode-section-header:first-of-type {
+            margin-top: 0;
+        }
+
+        /* Chat Messages Styling */
+        #chat-messages {
+            max-height: 250px;
+            background-color: var(--bg-chat-messages) !important;
+            border: 1px solid var(--border-color-chat) !important;
+            border-radius: 10px;
+            padding: 15px;
+            transition: background-color 0.5s ease, border-color 0.5s ease;
+        }
+        #chat-messages p {
+            margin-bottom: 8px;
+        }
+        .card-footer {
+            background-color: var(--bg-chat-footer) !important;
+            border-top: 1px solid var(--border-color-chat) !important;
+            border-radius: 0 0 12px 12px;
+            padding: 15px;
+            transition: background-color 0.5s ease, border-color 0.5s ease;
+        }
+        .reaction-btn {
+            font-size: 1.5em;
+            padding: 5px 10px;
+            border-radius: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            background-color: var(--bg-reaction-btn);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .reaction-btn:hover {
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: var(--shadow-reaction-btn-hover);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Theme Toggle Button */
+        #theme-toggle-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 10002;
+            background-color: var(--btn-secondary-bg);
+            border: 2px solid var(--btn-secondary-border);
+            color: var(--btn-secondary-color);
+            padding: 10px 15px;
+            border-radius: 50%; /* Make it round */
+            font-size: 1.5em;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        #theme-toggle-btn:hover {
+            background-color: var(--btn-secondary-hover-bg);
+            border-color: var(--btn-secondary-hover-border);
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        /* 3D Canvas Styling */
+        #timeline-3d-canvas {
+            width: 100%;
+            height: 300px; /* Fixed height for the canvas */
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            display: block; /* Ensure it takes full width */
+        }
+    </style>
+</head>
+<body>
+    <button id="theme-toggle-btn">☀️</button> <!-- Theme toggle button -->
+
+    <div id="luma-room-app" class="luma-room-app">
+        <header class="header">
+            <h1 class="mb-0 text-info-custom">LUMA ROOM <small class="text-muted fs-6">“Game Devs Unite: Design. Code. Playtest. Together.”</small></h1>
+            <p id="user-id-display" class="mb-0 fs-6"></p>
+        </header>
+
+        <div class="main-layout">
+            <!-- Left Sidebar: Rooms -->
+            <aside class="sidebar">
+                <h4 class="text-info-custom mb-3">Game Dev Rooms</h4>
+                <div class="input-group mb-3">
+                    <input type="text" id="room-name-input" class="form-control" placeholder="New Project Room Name">
+                    <button class="btn btn-custom-primary" id="create-room-btn" type="button">Create</button>
+                </div>
+                <ul id="rooms-list" class="list-group list-group-flush">
+                    <li class="list-group-item bg-dark text-muted border-info">No rooms available. Create one!</li>
+                </ul>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <div id="welcome-screen" class="d-flex flex-column justify-content-center align-items-center h-100 text-center text-white">
+                    <h2 class="text-info-custom">Welcome to LUMA ROOM for Game Devs!</h2>
+                    <p class="lead">Join an existing game project room or create a new one to get started.</p>
+                </div>
+
+                <div id="room-content" style="display: none;" class="h-100 d-flex flex-column">
+                    <div class="d-flex justify-content-center mb-4 gap-3">
+                        <button id="create-mode-btn" class="btn btn-custom-secondary">🎨 Design Mode</button>
+                        <button id="watch-mode-btn" class="btn btn-custom-secondary">🎬 Playtest Mode</button>
+                        <button id="build-mode-btn" class="btn btn-custom-info">🤖 Dev AI Mode</button>
+                    </div>
+
+                    <div id="create-mode-view" class="h-100 d-flex flex-column" style="display: none;">
+                        <h3 class="text-center mb-4 text-info-custom" id="create-room-name"></h3>
+                        <div class="mode-section-header">Game Concept & Narrative Generation</div>
+                        <!-- Multimodal Prompt Composer (Conceptual) -->
+                        <div class="mb-3">
+                            <label for="multimodal-prompt" class="form-label">Game Concept Prompt Composer:</label>
+                            <textarea class="form-control mb-2" id="multimodal-prompt" rows="3" placeholder="Describe your game concept, character, or level. (e.g., 'A rogue-lite dungeon crawler set in a sentient forest. [image icon] [voice icon] [emoji: 🌳⚔️🌲]')"></textarea>
+                            <small class="text-muted">
+                                (Conceptual: Integrate image/voice input for richer game concept generation.)
+                            </small>
+                        </div>
+                        <!-- AI Voice Actors with Emotion Dials (Simulated) -->
+                        <div class="mb-3">
+                            <label for="voice-emotion" class="form-label">AI Narrative Tone (for generated lore/dialogue):</label>
+                            <select class="form-select" id="voice-emotion">
+                                <option value="neutral">Neutral</option>
+                                <option value="sarcastic">Sarcastic</option>
+                                <option value="epic">Epic</option>
+                                <option value="whispering">Whispering</option>
+                                <option value="excited">Excited</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <button class="btn btn-custom-primary me-2" id="generate-story-btn">Generate Game Lore/Concept</button>
+                            <div class="dropdown d-inline-block">
+                                <button class="btn btn-custom-secondary dropdown-toggle" type="button" id="moodDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Game Mood: Neutral 😐
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="moodDropdown">
+                                    <li><a class="dropdown-item" href="#" data-mood="happy">Happy 😊</a></li>
+                                    <li><a class="dropdown-item" href="#" data-mood="sad">Sad 😢</a></li>
+                                    <li><a class="dropdown-item" href="#" data-mood="tense">Tense 😬</a></li>
+                                    <li><a class="dropdown-item" href="#" data-mood="neutral">Neutral 😐</a></li>
+                                </ul>
+                            </div>
+                            <small class="ms-2 text-muted"> (Influence AI's creative direction)</small>
+                        </div>
+                        <div id="story-output" class="form-control p-3 flex-grow-1 overflow-auto mb-3" style="min-height: 150px;">
+                            Your AI-assisted game concept or lore will appear here.
+                        </div>
+
+                        <div class="mode-section-header mt-4">Collaborative Game Design</div>
+                        <div id="branching-options-container" class="mb-3" style="display: none;">
+                            <h5 class="text-info-custom">Game Design Decisions:</h5>
+                            <div id="branching-options" class="d-flex flex-wrap gap-2 mb-2"></div>
+                            <button class="btn btn-custom-success" id="vote-path-btn">Vote for Design Path</button>
+                            <div id="simulated-votes" class="mt-2 text-muted"></div>
+                        </div>
+                        <!-- Visual Timeline Editor (3D) -->
+                        <div class="card p-3 mb-3">
+                            <h5 class="text-info-custom">Visual Game Timeline / Asset Arranger</h5>
+                            <p class="text-muted">
+                                Interact with the 3D space below to visualize game flow, level layouts, or asset placement.
+                                Drag to rotate, scroll to zoom.
+                            </p>
+                            <canvas id="timeline-3d-canvas"></canvas>
+                            <textarea class="form-control mt-3" rows="2" placeholder="Describe a new game event or asset to add to the timeline."></textarea>
+                            <button class="btn btn-custom-secondary mt-2" id="simulate-timeline-render">Simulate Asset Placement</button>
+                        </div>
+                        <!-- World Builder Mode - Conceptual -->
+                        <div class="card p-3 mb-3">
+                            <h5 class="text-info-custom">World Builder Mode (Conceptual)</h5>
+                            <p class="text-muted">
+                                Here, you'd collaboratively design interactive game worlds and biomes on a persistent shared map.
+                                Think of it as "designing a narrative galaxy" for your game.
+                            </p>
+                            <input type="text" class="form-control" placeholder="Describe a new biome, landmark, or world element...">
+                            <button class="btn btn-custom-secondary mt-2">Add World Element (Conceptual)</button>
+                        </div>
+                        <!-- Co-Creation Challenges -->
+                        <div class="card p-3 mb-3">
+                            <h5 class="text-info-custom">Game Design Challenges</h5>
+                            <p class="text-muted">
+                                Participate in timed group game design or feature creation events!
+                                Current Challenge: "Sci-Fi + Comedy Boss Battle" (Generate a prompt related to this theme).
+                            </p>
+                            <button class="btn btn-custom-warning" id="start-challenge-btn">Start Challenge</button>
+                            <div id="challenge-output" class="mt-2 form-control" style="min-height: 50px;"></div>
+                        </div>
+                    </div>
+
+                    <div id="watch-mode-view" class="h-100 d-flex flex-column" style="display: none;">
+                        <h3 class="text-center mb-4 text-info-custom" id="watch-room-name"></h3>
+                        <div class="mode-section-header">Live Playtest & Review</div>
+                        <div class="mb-3">
+                            <label for="youtube-url" class="form-label">Playtest Video / Dev Log URL:</label>
+                            <input type="text" class="form-control" id="youtube-url" placeholder="Enter YouTube video URL" value="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1">
+                        </div>
+                        <div class="ratio ratio-16x9 mb-3 rounded-3 overflow-hidden border border-info">
+                            <iframe id="youtube-iframe" src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen></iframe>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="dropdown me-2">
+                                <button class="btn btn-custom-secondary dropdown-toggle" type="button" id="currentMoodDropdownWatch" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Player Feedback: Neutral 😐
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="currentMoodDropdownWatch">
+                                    <li><a class="dropdown-item" href="#" data-mood="happy">Enjoying 😄</a></li>
+                                    <li><a class="dropdown-item" href="#" data-mood="sad">Frustrated 😥</a></li>
+                                    <li><a class="dropdown-item" href="#" data-mood="excited">Hyped 🥳</a></li>
+                                    <li><a class="dropdown-item" href="#" data-mood="tense">Challenged 😬</a></li>
+                                    <li><a class="dropdown-item" href="#" data-mood="neutral">Neutral 😐</a></li>
+                                </ul>
+                            </div>
+                            <button class="btn btn-custom-warning me-2" id="simulate-mood-drop-btn">Suggest Design Fix</button>
+                            <button class="btn btn-custom-success" id="simulate-mood-boost-btn">Suggest New Feature</button>
+                        </div>
+                        <div id="ai-host-comment" class="alert alert-info p-2 mb-3">
+                            <strong>Luma AI Playtest Analyst:</strong> Luma AI is ready to analyze your playtest session!
+                        </div>
+                        <!-- Dynamic Reactions Layer -->
+                        <div class="mb-3">
+                            <label class="form-label">Send Playtest Reaction:</label>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-outline-light reaction-btn" data-reaction="😂">😂</button>
+                                <button class="btn btn-outline-light reaction-btn" data-reaction="🔥">🔥</button>
+                                <button class="btn btn-outline-light reaction-btn" data-reaction="🤯">🤯</button>
+                                <button class="btn btn-outline-light reaction-btn" data-reaction="👍">👍</button>
+                                <button class="btn btn-outline-light reaction-btn" data-reaction="�">👎</button>
+                            </div>
+                        </div>
+
+                        <div class="mode-section-header mt-4">Playtest Tools</div>
+                        <!-- Movie Schedule and Voting System -->
+                        <div class="card p-3 mb-3">
+                            <h5 class="text-info-custom">Playtest Session Schedule & Voting</h5>
+                            <div id="movie-schedule-list" class="list-group mb-3">
+                                <!-- Movies will be rendered here by JavaScript -->
+                            </div>
+                            <button class="btn btn-custom-primary" id="play-selected-movie-btn">Start Most Voted Playtest</button>
+                            <div id="selected-movie-info" class="mt-2 text-muted"></div>
+                        </div>
+
+                        <!-- AI-Powered “Lore Companion” -->
+                        <div class="card p-3 mb-3">
+                            <h5 class="text-info-custom">AI Game Lore Companion</h5>
+                            <input type="text" class="form-control mb-2" id="lore-question-input" placeholder="Ask about game lore, character abilities, or design decisions.">
+                            <button class="btn btn-custom-info" id="ask-lore-btn">Ask Lore Companion</button>
+                            <div id="lore-output" class="mt-2 form-control" style="min-height: 50px;"></div>
+                        </div>
+                        <!-- Group-Controlled Playback -->
+                        <div class="card p-3 mb-3">
+                            <h5 class="text-info-custom">Group Playtest Control</h5>
+                            <p class="text-muted">Vote on playtest pacing or next build:</p>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-custom-secondary" id="vote-speed-up-btn">Speed Up Review ⏩</button>
+                                <button class="btn btn-custom-secondary" id="vote-slow-down-btn">Slow Down Review ⏪</button>
+                                <button class="btn btn-custom-secondary" id="vote-next-episode-btn">Next Build ▶️</button>
+                            </div>
+                            <div id="playback-vote-status" class="mt-2 text-muted"></div>
+                        </div>
+                        <!-- Generative Credits or Summaries -->
+                        <div class="card p-3 mb-3">
+                            <h5 class="text-info-custom">Generative Playtest Reports</h5>
+                            <button class="btn btn-custom-primary" id="generate-summary-btn">Generate Playtest Summary</button>
+                            <button class="btn btn-custom-info mt-2" id="generate-credits-btn">Generate Game Credits Draft</button>
+                            <div id="generative-content-output" class="mt-2 form-control" style="min-height: 50px;"></div>
+                        </div>
+                        <!-- Live GenAI Assist During Watch Mode (Conceptual) -->
+                        <div class="card p-3 mb-3">
+                            <h5 class="text-info-custom">Live GenAI Design Assist (Conceptual)</h5>
+                            <p class="text-muted">
+                                Imagine asking: "Make this level cyberpunk," and Luma re-renders
+                                a visual/audio overlay mid-playtest. This would require real-time
+                                game engine integration and powerful backend AI.
+                            </p>
+                            <input type="text" class="form-control" placeholder="e.g., 'Make this scene cyberpunk'">
+                            <button class="btn btn-custom-secondary mt-2">Live Assist</button>
+                        </div>
+                        <!-- AI Recast Mode (Conceptual) -->
+                        <div class="card p-3 mb-3">
+                            <h5 class="text-info-custom">AI Asset Recast Mode (Conceptual)</h5>
+                            <p class="text-muted">
+                                Replace character models or environmental assets with AI-generated
+                                alternatives for rapid prototyping. This is a highly advanced feature
+                                requiring specialized AI models and significant computational power.
+                            </p>
+                            <input type="text" class="form-control" placeholder="e.g., 'Recast protagonist as a cartoon cat'">
+                            <button class="btn btn-custom-secondary mt-2">Recast Asset</button>
+                        </div>
+
+                        <!-- Chat Section -->
+                        <div class="card flex-grow-1 d-flex flex-column">
+                            <div class="card-header text-center">Project Chat</div>
+                            <div id="chat-messages" class="card-body overflow-auto flex-grow-1" style="max-height: 200px;">
+                                <p class="text-muted text-center">No messages yet. Say hello!</p>
+                            </div>
+                            <div class="card-footer d-flex">
+                                <input type="text" class="form-control me-2" id="new-chat-message" placeholder="Type your message...">
+                                <button class="btn btn-custom-info" id="send-message-btn">Send</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="build-mode-view" class="h-100 d-flex flex-column" style="display: none;">
+                        <h3 class="text-center mb-4 text-info-custom" id="build-room-name"></h3>
+                        <div class="mode-section-header">AI Agent Customization for Game Dev</div>
+                        <!-- Persistent AI Persona -->
+                        <div class="mb-3">
+                            <label for="ai-persona" class="form-label">Luma AI Dev Persona:</label>
+                            <select class="form-select" id="ai-persona">
+                                <option value="game_designer">Game Designer</option>
+                                <option value="level_designer">Level Designer</option>
+                                <option value="combat_designer">Combat Designer</option>
+                                <option value="narrative_designer">Narrative Designer</option>
+                                <option value="technical_artist">Technical Artist</option>
+                                <option value="sound_designer">Sound Designer</option>
+                            </select>
+                            <small class="text-muted"> (AI's responses will adapt to this game dev role.)</small>
+                        </div>
+                        <!-- Skill Trees for Your AI -->
+                        <div class="mb-3">
+                            <label for="ai-skill" class="form-label">Luma AI Dev Skill Focus:</label>
+                            <select class="form-select" id="ai-skill">
+                                <option value="general_game_design">General Game Design</option>
+                                <option value="procedural_generation">Procedural Generation</option>
+                                <option value="combat_mechanics">Combat Mechanics</option>
+                                <option value="story_branching">Story Branching</option>
+                                <option value="asset_creation">Asset Creation</option>
+                                <option value="audio_engineering">Audio Engineering</option>
+                            </select>
+                            <small class="text-muted"> (AI's expertise will lean towards this game dev skill.)</small>
+                        </div>
+                        <!-- Prompt Marketplace (Conceptual) -->
+                        <div class="card p-3 mb-3">
+                            <h5 class="text-info-custom">Game Dev Prompt Marketplace (Conceptual)</h5>
+                            <p class="text-muted">
+                                Share, remix, and upvote awesome game design prompts or AI workflows from the community here.
+                                (e.g., "Procedural Dungeon Generator", "Dynamic Dialogue System Prompts")
+                            </p>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item bg-dark text-white border-info">"Sci-Fi City Builder" by Raj (👍 15)</li>
+                                <li class="list-group-item bg-dark text-white border-info">"Mystical Creature Generator" by Wen Xi (👍 12)</li>
+                            </ul>
+                        </div>
+
+                        <div class="mode-section-header mt-4">Collaborative Development Environment</div>
+                        <!-- Coding Terminal -->
+                        <div class="card p-3 mb-3">
+                            <h5 class="text-info-custom">Coding Terminal</h5>
+                            <textarea class="form-control mb-2" id="coding-terminal-input" rows="8" placeholder="Type your game code or command here... (e.g., 'function calculateDamage(attack, defense) { return attack - defense; }' or 'generate a Python script for pathfinding in a grid')"></textarea>
+                            <div class="d-flex gap-2 mb-2">
+                                <button class="btn btn-custom-primary" id="run-code-btn">Run Code</button>
+                                <button class="btn btn-custom-secondary" id="clear-terminal-btn">Clear Terminal</button>
+                            </div>
+                            <div id="coding-terminal-output" class="form-control bg-dark text-success font-monospace p-2" style="min-height: 80px; overflow-y: auto;">
+                                <pre>Luma Dev Terminal v1.0.0</pre>
+                                <pre>Ready for your game dev commands...</pre>
+                            </div>
+                        </div>
+
+                        <!-- Pre-made Projects -->
+                        <div class="card p-3 mb-3">
+                            <h5 class="text-info-custom">Pre-made Game Projects</h5>
+                            <p class="text-muted">Load a project to get started with collaborative game creation.</p>
+                            <ul id="premade-projects-list" class="list-group list-group-flush">
+                                <li class="list-group-item bg-dark text-white border-info d-flex justify-content-between align-items-center">
+                                    <span>"AI-Driven Game Concept"</span>
+                                    <button class="btn btn-sm btn-outline-info open-project-btn" data-project-id="game_concept">Open</button>
+                                </li>
+                                <li class="list-group-item bg-dark text-white border-info d-flex justify-content-between align-items-center">
+                                    <span>"Collaborative Game Narrative Outline"</span>
+                                    <button class="btn btn-sm btn-outline-info open-project-btn" data-project-id="screenplay_outline">Open</button>
+                                </li>
+                                <li class="list-group-item bg-dark text-white border-info d-flex justify-content-between align-items-center">
+                                    <span>"Generative Game Asset Series"</span>
+                                    <button class="btn btn-sm btn-outline-info open-project-btn" data-project-id="generative_art">Open</button>
+                                </li>
+                                <li class="list-group-item bg-dark text-white border-info d-flex justify-content-between align-items-center">
+                                    <span>"AI In-Game Dialogue Generator"</span>
+                                    <button class="btn btn-sm btn-outline-info open-project-btn" data-project-id="poetry_generator">Open</button>
+                                </li>
+                                <li class="list-group-item bg-dark text-white border-info d-flex justify-content-between align-items-center">
+                                    <span>"Game Ambient Music Loop Creator"</span>
+                                    <button class="btn btn-sm btn-outline-info open-project-btn" data-project-id="music_loop_creator">Open</button>
+                                </li>
+                                <li class="list-group-item bg-dark text-white border-info d-flex justify-content-between align-items-center">
+                                    <span>"Game Character Design Brief"</span>
+                                    <button class="btn btn-sm btn-outline-info open-project-btn" data-project-id="character_design_brief">Open</button>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="command-input" class="form-label">AI Dev Command Bar:</label>
+                            <input type="text" class="form-control" id="command-input" placeholder="e.g., Suggest 3 level design patterns for a stealth game.">
+                        </div>
+                        <div class="mb-3">
+                            <button class="btn btn-custom-primary" id="execute-command-btn">Execute Command</button>
+                        </div>
+                        <div id="ai-sidekick-output" class="form-control p-3 flex-grow-1 overflow-auto" style="min-height: 150px;">
+                            Your AI Dev Sidekick is ready to assist. Try commands like "Suggest a plot twist for a detective game story."
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Right Sidebar: AI Agent -->
+            <aside class="right-sidebar">
+                <h4 class="text-info-custom mb-3">Luma AI Dev Agent</h4>
+                <p class="text-muted">
+                    Your personal AI sidekick for game development tasks.
+                    (Access full features in Dev AI Mode)
+                </p>
+                <div class="card p-3 rounded-3">
+                    <p class="mb-0">
+                        Luma AI is an intelligent assistant designed to help you shape game concepts,
+                        prototype assets, and co-develop game content within your rooms.
+                    </p>
+                </div>
+                <!-- Creator Leaderboards (Conceptual) -->
+                <div class="card p-3 mt-3">
+                    <h5 class="text-info-custom">Game Dev Leaderboards (Conceptual)</h5>
+                    <p class="text-muted">
+                        Weekly top Game Project Rooms, AI-assisted designs, and collaborative code contributions.
+                    </p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item bg-dark text-white border-info">🏆 Top Project: "Galactic Frontier" by Ram</li>
+                        <li class="list-group-item bg-dark text-white border-info">✍️ Top Design Prompt: "Dynamic Weather System" by Adam</li>
+                        <li class="list-group-item bg-dark text-white border-info">🤖 Top AI Collab: "Procedural City Generator" by Steve</li>
+                    </ul>
+                </div>
+                <!-- 3D Avatar Theaters / Teleport Between Rooms / Generative Room Skins / Memory Capsules (Conceptual) -->
+                <div class="card p-3 mt-3">
+                    <h5 class="text-info-custom">Game Dev Room Features</h5>
+                    <p class="text-muted">
+                        Simulated interactions within your collaborative 3D game dev environment.
+                    </p>
+                    <button class="btn btn-custom-secondary mt-2" id="teleport-btn">Teleport to Biome</button>
+                    <button class="btn btn-custom-secondary mt-2" id="room-skin-gen-btn">Generate Dev Environment Skin</button>
+                    <button class="btn btn-custom-secondary mt-2" id="memory-capsule-btn">Access Past Dev Session</button>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
+
+    <!-- Message Box Overlay -->
+    <div id="message-box-overlay" class="message-box-overlay" style="display: none;">
+        <div class="message-box">
+            <p id="message-box-content"></p>
+            <button class="btn btn-custom-primary" id="message-box-ok-btn">OK</button>
+        </div>
+    </div>
+
+    <!-- Codename Input Modal -->
+    <div id="codename-modal-overlay" class="codename-modal-overlay" style="display: none;">
+        <div class="codename-modal">
+            <h4 class="text-info-custom mb-3">Enter Your Game Dev Codename</h4>
+            <p>This will be your identity in LUMA ROOM.</p>
+            <input type="text" id="codename-input" class="form-control mb-3" placeholder="e.g., PixelPioneer, CodeCrafter, LevelLord">
+            <button class="btn btn-custom-primary" id="set-codename-btn">Enter LUMA ROOM</button>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    
+    <!-- Main Application Logic -->
+    <script type="module">
+        // --- Global Variables ---
+        let currentUserId = ''; // Will be set by user input or default
+        let currentUserCodename = ''; // User's chosen codename
+        let activeRoom = null; 
+
+        // Simulated data for rooms and messages (no persistence)
+        let rooms = [
+            { id: 'room1', name: 'AI Game Design Lab', createdBy: 'DevLead' },
+            { id: 'room2', name: 'Playtest Review Hub', createdBy: 'QA_Master' },
+            { id: 'room3', name: 'Code & Asset Forge', createdBy: 'Artisan_AI' }
+        ];
+        // Store chat messages per room
+        const roomChatHistories = {
+            'room1': [],
+            'room2': [],
+            'room3': []
+        };
+
+        // Simulated playtest schedule with votes
+        const movieSchedule = [ // Reusing 'movieSchedule' for 'playtestSchedule'
+            { id: 'playtest1', title: 'Alpha Build 1.0 - Core Loop', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1', votes: 0 },
+            { id: 'playtest2', title: 'Level 2 - Puzzle Mechanics', url: 'https://www.youtube.com/embed/2Q_ZzBGPdqE?autoplay=1', votes: 0 }, // Placeholder
+            { id: 'playtest3', title: 'Combat System Refinement', url: 'https://www.youtube.com/embed/LXb3EKWsInQ?autoplay=1', votes: 0 } // Placeholder
+        ];
+
+        // --- UI Elements ---
+        const userIdDisplay = document.getElementById('user-id-display');
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const roomContent = document.getElementById('room-content');
+        const roomNameInput = document.getElementById('room-name-input');
+        const createRoomBtn = document.getElementById('create-room-btn');
+        const roomsList = document.getElementById('rooms-list');
+
+        // Mode buttons and views
+        const createModeBtn = document.getElementById('create-mode-btn');
+        const watchModeBtn = document.getElementById('watch-mode-btn');
+        const buildModeBtn = document.getElementById('build-mode-btn');
+        const createModeView = document.getElementById('create-mode-view');
+        const watchModeView = document.getElementById('watch-mode-view');
+        const buildModeView = document.getElementById('build-mode-view');
+
+        // Create Mode elements
+        const createRoomNameDisplay = document.getElementById('create-room-name');
+        const multimodalPromptInput = document.getElementById('multimodal-prompt');
+        const voiceEmotionSelect = document.getElementById('voice-emotion');
+        const generateStoryBtn = document.getElementById('generate-story-btn');
+        const storyOutputDiv = document.getElementById('story-output');
+        const branchingOptionsContainer = document.getElementById('branching-options-container');
+        const branchingOptionsDiv = document.getElementById('branching-options');
+        const votePathBtn = document.getElementById('vote-path-btn');
+        const moodDropdownBtn = document.getElementById('moodDropdown');
+        const moodDropdownItems = document.querySelectorAll('#moodDropdown + .dropdown-menu .dropdown-item');
+        const simulatedVotesDiv = document.getElementById('simulated-votes');
+        const startChallengeBtn = document.getElementById('start-challenge-btn');
+        const challengeOutputDiv = document.getElementById('challenge-output');
+        const simulateTimelineRenderBtn = document.getElementById('simulate-timeline-render');
+
+        // Watch Mode elements
+        const watchRoomNameDisplay = document.getElementById('watch-room-name');
+        const youtubeUrlInput = document.getElementById('youtube-url');
+        const youtubeIframe = document.getElementById('youtube-iframe');
+        const aiHostCommentDiv = document.getElementById('ai-host-comment');
+        const currentMoodDropdownWatchBtn = document.getElementById('currentMoodDropdownWatch');
+        const watchMoodDropdownItems = document.querySelectorAll('#currentMoodDropdownWatch + .dropdown-menu .dropdown-item');
+        const simulateMoodDropBtn = document.getElementById('simulate-mood-drop-btn');
+        const simulateMoodBoostBtn = document.getElementById('simulate-mood-boost-btn');
+        const reactionButtons = document.querySelectorAll('.reaction-btn');
+        const movieScheduleList = document.getElementById('movie-schedule-list');
+        const playSelectedMovieBtn = document.getElementById('play-selected-movie-btn');
+        const selectedMovieInfo = document.getElementById('selected-movie-info');
+        const loreQuestionInput = document.getElementById('lore-question-input');
+        const askLoreBtn = document.getElementById('ask-lore-btn');
+        const loreOutputDiv = document.getElementById('lore-output');
+        const voteSpeedUpBtn = document.getElementById('vote-speed-up-btn');
+        const voteSlowDownBtn = document.getElementById('vote-slow-down-btn'); 
+        const voteNextEpisodeBtn = document.getElementById('vote-next-episode-btn');
+        const playbackVoteStatusDiv = document.getElementById('playback-vote-status');
+        const generateSummaryBtn = document.getElementById('generate-summary-btn');
+        const generateCreditsBtn = document.getElementById('generate-credits-btn');
+        const generativeContentOutputDiv = document.getElementById('generative-content-output');
+        const chatMessagesDiv = document.getElementById('chat-messages');
+        const newChatMessageInput = document.getElementById('new-chat-message');
+        const sendMessageBtn = document.getElementById('send-message-btn');
+
+        // Build Mode elements
+        const buildRoomNameDisplay = document.getElementById('build-room-name');
+        const aiPersonaSelect = document.getElementById('ai-persona');
+        const aiSkillSelect = document.getElementById('ai-skill');
+        const commandInput = document.getElementById('command-input');
+        const executeCommandBtn = document.getElementById('execute-command-btn');
+        const aiSidekickOutputDiv = document.getElementById('ai-sidekick-output');
+        const codingTerminalInput = document.getElementById('coding-terminal-input');
+        const runCodeBtn = document.getElementById('run-code-btn');
+        const clearTerminalBtn = document.getElementById('clear-terminal-btn');
+        const codingTerminalOutput = document.getElementById('coding-terminal-output');
+        const premadeProjectsList = document.getElementById('premade-projects-list');
+        const teleportBtn = document.getElementById('teleport-btn');
+        const roomSkinGenBtn = document.getElementById('room-skin-gen-btn');
+        const memoryCapsuleBtn = document.getElementById('memory-capsule-btn');
+
+        // Message Box elements
+        const messageBoxOverlay = document.getElementById('message-box-overlay');
+        const messageBoxContent = document.getElementById('message-box-content');
+        const messageBoxOkBtn = document.getElementById('message-box-ok-btn');
+
+        // Codename Modal elements
+        const codenameModalOverlay = document.getElementById('codename-modal-overlay');
+        const codenameInput = document.getElementById('codename-input');
+        const setCodenameBtn = document.getElementById('set-codename-btn');
+
+        // Notification Container
+        const notificationContainer = document.getElementById('notification-container');
+
+        // Theme Toggle
+        const themeToggleBtn = document.getElementById('theme-toggle-btn');
+        let isLightMode = false;
+
+        // --- Utility Functions ---
+
+        function showMessageBox(message) {
+            messageBoxContent.textContent = message;
+            messageBoxOverlay.style.display = 'flex';
+        }
+
+        function hideMessageBox() {
+            messageBoxOverlay.style.display = 'none';
+            messageBoxContent.textContent = '';
+        }
+
+        function showNotification(message, duration = 4000) {
+            const toast = document.createElement('div');
+            toast.className = 'notification-toast';
+            toast.textContent = message;
+            notificationContainer.appendChild(toast);
+
+            void toast.offsetWidth; 
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(120%)';
+                toast.addEventListener('transitionend', () => toast.remove());
+            }, duration);
+        }
+
+        function showView(viewId) {
+            const views = [createModeView, watchModeView, buildModeView];
+            views.forEach(view => {
+                if (view.id === viewId) {
+                    view.style.display = 'flex';
+                } else {
+                    view.style.display = 'none';
+                }
+            });
+            welcomeScreen.style.display = 'none';
+            roomContent.style.display = 'flex';
+        }
+
+        function setActiveModeButton(mode) {
+            const buttons = [createModeBtn, watchModeBtn, buildModeBtn];
+            buttons.forEach(btn => {
+                btn.classList.remove('btn-custom-info');
+                btn.classList.add('btn-custom-secondary');
+            });
+            if (mode === 'create') createModeBtn.classList.replace('btn-custom-secondary', 'btn-custom-info');
+            else if (mode === 'watch') watchModeBtn.classList.replace('btn-custom-secondary', 'btn-custom-info');
+            else if (mode === 'build') buildModeBtn.classList.replace('btn-custom-secondary', 'btn-custom-info');
+        }
+
+        // --- Theme Toggle Logic ---
+        function toggleTheme() {
+            isLightMode = !isLightMode;
+            document.body.classList.toggle('light-mode', isLightMode);
+            themeToggleBtn.textContent = isLightMode ? '🌙' : '☀️';
+            showNotification(`Switched to ${isLightMode ? 'Light' : 'Dark'} Mode!`);
+        }
+        themeToggleBtn.addEventListener('click', toggleTheme);
+
+        // --- Room Management (Simulated) ---
+
+        function renderRoomsList() {
+            roomsList.innerHTML = '';
+            if (rooms.length === 0) {
+                roomsList.innerHTML = '<li class="list-group-item bg-dark text-muted border-info">No rooms available. Create one!</li>';
+            } else {
+                rooms.forEach(room => {
+                    const li = document.createElement('li');
+                    li.className = `list-group-item bg-secondary text-white border-info mb-2 rounded-3 d-flex justify-content-between align-items-center`;
+                    if (activeRoom && activeRoom.id === room.id) {
+                        li.classList.add('active-room');
+                    }
+                    li.style.cursor = 'pointer';
+                    li.style.transition = 'background-color 0.2s, transform 0.2s, box-shadow 0.2s';
+                    li.innerHTML = `
+                        <div>
+                            ${room.name}
+                            <small class="d-block text-muted">Created by: ${room.createdBy}</small>
+                        </div>
+                        <button class="btn btn-sm btn-outline-info join-room-btn" data-room-id="${room.id}">Join</button>
+                    `;
+                    li.addEventListener('click', (e) => {
+                        if (!e.target.classList.contains('join-room-btn')) {
+                            joinRoom(room.id);
+                        }
+                    });
+                    li.querySelector('.join-room-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        joinRoom(room.id);
+                    });
+                    roomsList.appendChild(li);
+                });
+            }
+        }
+
+        function createRoom() {
+            const roomName = roomNameInput.value.trim();
+            if (!roomName) {
+                showMessageBox("Room name cannot be empty.");
+                return;
+            }
+            const newRoomId = 'room' + (rooms.length + 1);
+            const newRoom = { id: newRoomId, name: roomName, createdBy: currentUserCodename };
+            rooms.push(newRoom);
+            roomChatHistories[newRoomId] = []; // Initialize chat history for new room
+            roomNameInput.value = '';
+            renderRoomsList(); // Re-render the list to show the new room
+            joinRoom(newRoomId);
+            showNotification(`Room "${newRoom.name}" created!`);
+        }
+
+        function joinRoom(roomId) {
+            const roomToJoin = rooms.find(room => room.id === roomId);
+            if (roomToJoin) {
+                activeRoom = roomToJoin;
+                console.log("Joined room:", activeRoom.name);
+                showNotification(`Joined room: "${activeRoom.name}"`);
+                // Update active room styling in the list
+                document.querySelectorAll('#rooms-list li').forEach(li => {
+                    li.classList.remove('active-room');
+                    const btn = li.querySelector('.join-room-btn');
+                    if (btn && btn.dataset.roomId === roomToJoin.id) {
+                        li.classList.add('active-room');
+                    }
+                });
+                
+                renderChatMessages(); // Render messages for the newly joined room
+                renderMovieSchedule(); // Render movie schedule for the newly joined room
+
+                // Set room names in content areas
+                createRoomNameDisplay.textContent = `AI-Assisted Game Design: ${activeRoom.name}`;
+                watchRoomNameDisplay.textContent = `Live Playtest & Review: ${activeRoom.name}`;
+                buildRoomNameDisplay.textContent = `AI Dev Sidekick: ${activeRoom.name}`;
+
+                showView('watch-mode-view'); // Default to watch mode when joining
+                setActiveModeButton('watch');
+            } else {
+                showMessageBox("Room not found.");
+            }
+        }
+
+        // --- Chat Management (Simulated Multiplayer) ---
+        const simulatedUsernames = ['PixelPioneer', 'CodeCrafter', 'LevelLord', 'Artisan_AI', 'SynthComposer', 'NarrativeNinja', 'BugHunter', 'UX_Guru', 'GameMaster', 'WorldWeaver'];
+        const simulatedMessages = [
+            "Hey team, what's the plan for the next sprint?", "Just finished the new character model!", "Anyone testing the combat system today?",
+            "This boss battle concept is epic!", "Need feedback on Level 3 layout.", "AI generated some interesting dialogue options.",
+            "Found a bug in the physics engine.", "Loving the new ambient track!", "Let's brainstorm some unique abilities.",
+            "Can we optimize this shader?", "Playtest results are in!", "Great work on the procedural generation!",
+            "Thinking about narrative branching for the next update.", "This game is going to be huge!", "Time for a quick stand-up?",
+            "Just pushed a new build.", "Any ideas for a new enemy type?", "The lighting in this scene is stunning!",
+            "Let's integrate the new sound effects.", "Ready for the next design challenge!", "This collab is amazing!",
+            "Swag together, slay together!", "Let's crush this sprint!", "Feeling productive today!",
+            "The game dev journey continues!", "What's the most voted playtest for today?", "Need more coffee for coding!"
+        ];
+
+        let chatInterval = null; // To store the interval ID for simulated chat
+
+        function addSimulatedChatMessage(roomId, messageType = 'message', customMessage = null) {
+            if (!roomChatHistories[roomId]) return;
+
+            const senderName = simulatedUsernames[Math.floor(Math.random() * simulatedUsernames.length)];
+            let messageText;
+            let isSystemMessage = false;
+
+            if (customMessage) {
+                messageText = customMessage;
+            } else if (messageType === 'join') {
+                messageText = `${senderName} has joined the room.`;
+                isSystemMessage = true;
+            } else {
+                messageText = simulatedMessages[Math.floor(Math.random() * simulatedMessages.length)];
+            }
+            
+            roomChatHistories[roomId].push({
+                senderId: senderName, // Using name as ID for simulated users
+                senderName: senderName,
+                text: messageText,
+                timestamp: new Date().toLocaleTimeString(),
+                isSystem: isSystemMessage
+            });
+            renderChatMessages();
+        }
+
+        function renderChatMessages() {
+            if (!activeRoom) {
+                chatMessagesDiv.innerHTML = '<p class="text-muted text-center">No messages yet. Join a room to chat!</p>';
+                return;
+            }
+
+            const currentRoomMessages = roomChatHistories[activeRoom.id] || [];
+            chatMessagesDiv.innerHTML = ''; // Clear existing messages
+
+            if (currentRoomMessages.length === 0) {
+                chatMessagesDiv.innerHTML = '<p class="text-muted text-center">No messages yet. Say hello!</p>';
+            } else {
+                currentRoomMessages.forEach(msg => {
+                    const msgElement = document.createElement('div');
+                    msgElement.className = `d-flex ${msg.senderId === currentUserId ? 'justify-content-end' : 'justify-content-start'} mb-2`;
+                    
+                    let senderDisplay = msg.senderName;
+                    if (msg.senderId === currentUserId) {
+                        senderDisplay = currentUserCodename;
+                    } else if (msg.isSystem) {
+                        senderDisplay = "System";
+                    }
+
+                    msgElement.innerHTML = `
+                        <div class="p-2 rounded-3 ${msg.senderId === currentUserId ? 'bg-info text-dark' : (msg.isSystem ? 'bg-secondary text-white border border-secondary' : 'bg-dark text-white border border-info')}">
+                            <strong>${senderDisplay}:</strong> ${msg.text}
+                            <small class="d-block text-muted" style="font-size: 0.75em;">
+                                ${msg.timestamp}
+                            </small>
+                        </div>
+                    `;
+                    chatMessagesDiv.appendChild(msgElement);
+                });
+                chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight; // Scroll to bottom
+            }
+        }
+
+        function sendMessage() {
+            const messageText = newChatMessageInput.value.trim();
+            if (!messageText || !activeRoom) return;
+
+            roomChatHistories[activeRoom.id].push({
+                senderId: currentUserId,
+                senderName: currentUserCodename,
+                text: messageText,
+                timestamp: new Date().toLocaleTimeString(),
+                isSystem: false
+            });
+            newChatMessageInput.value = '';
+            renderChatMessages();
+            console.log("Message sent.");
+            showNotification(`Message sent in "${activeRoom.name}"!`);
+
+            // Simulate a response from another user after a short delay
+            setTimeout(() => {
+                if (activeRoom) { // Ensure still in a room
+                    addSimulatedChatMessage(activeRoom.id);
+                }
+            }, 1000 + Math.random() * 2000); // 1-3 second delay
+        }
+
+        // --- AI Interaction Function (Gemini API) ---
+        async function callGeminiAPI(prompt, schema = null, outputElement, loadingElement) {
+            // Store original content to restore after loading
+            const originalOutputHtml = outputElement.innerHTML;
+            const originalLoadingText = loadingElement ? loadingElement.textContent : '';
+
+            outputElement.innerHTML = '<div class="spinner-border text-info-custom" role="status"><span class="visually-hidden">Loading...</span></div><span class="ms-2 text-white">Luma AI is thinking...</span>';
+            if (loadingElement) loadingElement.disabled = true;
+
+            const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+            let payload = { contents: chatHistory };
+
+            if (schema) {
+                payload.generationConfig = {
+                    responseMimeType: "application/json",
+                    responseSchema: schema
+                };
+            }
+
+            // IMPORTANT: Replace "*" with your actual Gemini API Key
+            // This key is not stored by the model and needs to be provided by the user.
+            const apiKey = "*"; // use ur own
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) { 
+                    const text = result.candidates[0].content.parts[0].text;
+                    let parsedResult = text;
+                    try {
+                        if (schema) {
+                           parsedResult = JSON.parse(text);
+                        }
+                    } catch (e) {
+                        console.warn("Failed to parse JSON, returning raw text:", text);
+                        parsedResult = text; // Fallback to raw text if JSON parsing fails
+                    }
+                    outputElement.innerHTML = ''; // Clear loading spinner placeholder
+                    showNotification("AI response received!");
+                    return parsedResult;
+                } else {
+                    console.error("Gemini API returned an unexpected structure:", result);
+                    showMessageBox("Error: AI response structure was unexpected.");
+                    outputElement.innerHTML = originalOutputHtml; // Restore original content
+                    showNotification("AI response failed!", 5000);
+                    return null;
+                }
+            } catch (error) {
+                console.error("Error calling Gemini API:", error);
+                showMessageBox(`Error connecting to AI: ${error.message}`);
+                outputElement.innerHTML = originalOutputHtml; // Restore original content
+                showNotification(`AI connection error: ${error.message}`, 5000);
+                return null;
+            } finally {
+                if (loadingElement) loadingElement.disabled = false;
+                if (loadingElement) loadingElement.textContent = originalLoadingText; // Restore button text
+            }
+        }
+
+        // --- Event Listeners ---
+
+        // Initial setup on window load
+        window.addEventListener('load', () => {
+            welcomeScreen.style.display = 'flex';
+            codenameModalOverlay.style.display = 'flex';
+            init3DTimeline(); // Initialize 3D scene on load
+        });
+
+        setCodenameBtn.addEventListener('click', () => {
+            const userCodenameInput = codenameInput.value.trim();
+            currentUserCodename = userCodenameInput ? userCodenameInput : `GameDev-${Math.random().toString(36).substring(2, 8)}`;
+            currentUserId = currentUserCodename;
+
+            userIdDisplay.innerHTML = `Your User ID: <span class="badge bg-primary text-white">${currentUserCodename}</span>`;
+            codenameModalOverlay.style.display = 'none';
+
+            renderRoomsList();
+            joinRoom('room1');
+            startMoodChangeSimulation();
+            showNotification(`Welcome, ${currentUserCodename}! Get ready to build awesome games!`);
+        });
+
+        codenameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                setCodenameBtn.click();
+            }
+        });
+
+        messageBoxOkBtn.addEventListener('click', hideMessageBox);
+
+        createRoomBtn.addEventListener('click', createRoom);
+        roomNameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') createRoom();
+        });
+
+        createModeBtn.addEventListener('click', () => {
+            showView('create-mode-view');
+            setActiveModeButton('create');
+        });
+        watchModeBtn.addEventListener('click', () => {
+            showView('watch-mode-view');
+            setActiveModeButton('watch');
+            renderMovieSchedule();
+        });
+        buildModeBtn.addEventListener('click', () => {
+            showView('build-mode-view');
+            setActiveModeButton('build');
+        });
+
+        // --- Create Mode Logic ---
+        let currentStory = ''; // Reusing for game concept/lore
+        let currentBranchingOptions = [];
+        let selectedMood = 'neutral';
+
+        moodDropdownItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                selectedMood = e.target.dataset.mood;
+                moodDropdownBtn.textContent = `Game Mood: ${e.target.textContent}`;
+            });
+        });
+
+        generateStoryBtn.addEventListener('click', async () => {
+            const multimodalPrompt = multimodalPromptInput.value.trim();
+            const voiceEmotion = voiceEmotionSelect.value; // Reusing for AI Narrative Tone
+
+            if (!multimodalPrompt) {
+                showMessageBox("Please enter a game concept or lore prompt.");
+                return;
+            }
+
+            const prompt = `As a game design AI, generate a short, dynamic game concept or piece of game lore based on the following prompt: "${multimodalPrompt}". The narrative tone should convey a "${voiceEmotion}" emotion. Include a clear ending and suggest 2-3 branching game design or narrative path options for the next part, formatted as a JSON array of strings. Overall game mood: ${selectedMood}.`;
+            const schema = {
+                type: "OBJECT",
+                properties: {
+                    story: { type: "STRING" }, // Reusing 'story' for game concept/lore
+                    branchingPaths: {
+                        type: "ARRAY",
+                        items: { type: "STRING" }
+                    }
+                },
+                required: ["story", "branchingPaths"]
+            };
+
+            const result = await callGeminiAPI(prompt, schema, storyOutputDiv, generateStoryBtn);
+            if (result && result.story) {
+                currentStory = result.story;
+                storyOutputDiv.innerHTML = `<p><em>(AI Narrative Tone: ${voiceEmotion})</em></p>` + currentStory.split('\n').map(p => `<p>${p}</p>`).join('');
+                currentBranchingOptions = result.branchingPaths || [];
+                renderBranchingOptions();
+                showNotification("New game concept/lore generated!");
+            } else {
+                currentStory = result || "Error: Could not generate game concept/lore.";
+                storyOutputDiv.innerHTML = `<p>${currentStory}</p>`;
+                currentBranchingOptions = [];
+                renderBranchingOptions();
+            }
+        });
+
+        function renderBranchingOptions() {
+            branchingOptionsDiv.innerHTML = '';
+            simulatedVotesDiv.textContent = '';
+            if (currentBranchingOptions.length > 0) {
+                branchingOptionsContainer.style.display = 'block';
+                currentBranchingOptions.forEach((option, index) => {
+                    const div = document.createElement('div');
+                    div.className = "form-check form-check-inline";
+                    div.innerHTML = `
+                        <input class="form-check-input" type="radio" name="branchingOption" id="option${index}" value="${option}">
+                        <label class="form-check-label text-white" for="option${index}">${option}</label>
+                    `;
+                    branchingOptionsDiv.appendChild(div);
+                });
+            } else {
+                branchingOptionsContainer.style.display = 'none';
+            }
+        }
+
+        votePathBtn.addEventListener('click', async () => {
+            const selectedOptionInput = document.querySelector('input[name="branchingOption"]:checked');
+            if (!selectedOptionInput) {
+                showMessageBox("Please select a game design path to vote on.");
+                return;
+            }
+            const userVote = selectedOptionInput.value;
+
+            const voteCounts = {};
+            currentBranchingOptions.forEach(option => voteCounts[option] = 0);
+            voteCounts[userVote]++;
+
+            const numSimulatedUsers = Math.floor(Math.random() * 5) + 2;
+            for (let i = 0; i < numSimulatedUsers; i++) {
+                const randomOption = currentBranchingOptions[Math.floor(Math.random() * currentBranchingOptions.length)];
+                voteCounts[randomOption] = (voteCounts[randomOption] || 0) + 1;
+            }
+
+            let mostVotedOption = userVote;
+            let maxVotes = voteCounts[userVote];
+
+            let voteSummary = `Your vote: "${userVote}". Other votes: `;
+            let otherVotesArray = [];
+
+            for (const option in voteCounts) {
+                if (option !== userVote) {
+                    otherVotesArray.push(`"${option}" (${voteCounts[option]} votes)`);
+                }
+                if (voteCounts[option] > maxVotes) {
+                    maxVotes = voteCounts[option];
+                    mostVotedOption = option;
+                } else if (voteCounts[option] === maxVotes && option !== userVote) {
+                    if (Math.random() > 0.5) {
+                        mostVotedOption = option;
+                    }
+                }
+            }
+            voteSummary += otherVotesArray.join(', ') + `.`;
+            simulatedVotesDiv.textContent = voteSummary;
+            
+            storyOutputDiv.innerHTML += `<p class="text-muted">Consensus: "${mostVotedOption}". AI is continuing the game design...</p>`;
+            showNotification(`Vote cast for "${userVote}"!`);
+
+            const prompt = `Continue the game design/lore based on the previous part: "${currentStory}". The chosen design path (by consensus) is: "${mostVotedOption}". Generate the next part of the game narrative or design concept and suggest 2-3 new branching game design options, formatted as a JSON array of strings. Mood: ${selectedMood}.`;
+            const schema = {
+                type: "OBJECT",
+                properties: {
+                    story: { type: "STRING" },
+                    branchingPaths: {
+                        type: "ARRAY",
+                        items: { type: "STRING" }
+                    }
+                },
+                required: ["story", "branchingPaths"]
+            };
+
+            const result = await callGeminiAPI(prompt, schema, storyOutputDiv, votePathBtn);
+            if (result && result.story) {
+                currentStory += "\n\n" + result.story;
+                storyOutputDiv.innerHTML = `<p><em>(AI Narrative Tone: ${voiceEmotionSelect.value})</em></p>` + currentStory.split('\n').map(p => `<p>${p}</p>`).join('');
+                currentBranchingOptions = result.branchingPaths || [];
+                renderBranchingOptions();
+                showNotification("Game design continued!");
+            } else {
+                storyOutputDiv.innerHTML += `<p>${result || "Error: Could not continue game design."}</p>`;
+                currentBranchingOptions = [];
+                renderBranchingOptions();
+            }
+        });
+
+        startChallengeBtn.addEventListener('click', async () => {
+            const challengeTheme = "Sci-Fi + Comedy Boss Battle";
+            const prompt = `Generate a creative game design challenge prompt for a "Game Design Challenge" with the theme "${challengeTheme}". The prompt should be engaging and concise, focusing on a specific game design problem.`;
+            const result = await callGeminiAPI(prompt, null, challengeOutputDiv, startChallengeBtn);
+            if (result) {
+                challengeOutputDiv.textContent = `Challenge: "${result}"`;
+                showMessageBox(`New Game Design Challenge started! Check the output for details.`);
+                showNotification(`New challenge started: "${challengeTheme}"!`);
+            }
+        });
+
+        simulateTimelineRenderBtn.addEventListener('click', () => {
+            showMessageBox("Simulating 3D game asset placement. Imagine dynamically arranging level elements and character models!");
+            showNotification("3D Game Timeline/Assets rendered!");
+        });
+
+        // --- 3D Timeline Logic (Three.js) ---
+        let scene, camera, renderer, controls;
+        let cubes = [];
+        const numCubes = 10;
+        const cubeSize = 0.5;
+        const radius = 3;
+
+        function init3DTimeline() {
+            const canvas = document.getElementById('timeline-3d-canvas');
+            if (!canvas) {
+                console.error("3D canvas element not found!");
+                return;
+            }
+
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+            renderer.setClearColor(0x000000, 0); // Transparent background
+
+            // Set initial size
+            onWindowResize();
+
+            // Lights - Enhanced
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.8); // Soft white light, slightly brighter
+            scene.add(ambientLight);
+            
+            const pointLight1 = new THREE.PointLight(0x00ffff, 1, 100); // Cyan light
+            pointLight1.position.set(5, 5, 5);
+            scene.add(pointLight1);
+
+            const pointLight2 = new THREE.PointLight(0x00ff00, 0.8, 100); // Green light
+            pointLight2.position.set(-5, -5, 5);
+            scene.add(pointLight2);
+
+            // Grid Helper - Enhanced
+            const gridHelper = new THREE.GridHelper(10, 10, 0x00ffff, 0x555555); // Cyan grid lines
+            scene.add(gridHelper);
+
+            // OrbitControls for camera interaction
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.screenSpacePanning = false;
+            controls.minDistance = 2;
+            controls.maxDistance = 10;
+            controls.maxPolarAngle = Math.PI / 2;
+
+            // Create timeline elements (cubes, representing story beats/scenes)
+            for (let i = 0; i < numCubes; i++) {
+                const geometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+                const material = new THREE.MeshStandardMaterial({
+                    color: new THREE.Color(`hsl(${i * (360 / numCubes)}, 100%, 70%)`),
+                    emissive: new THREE.Color(`hsl(${i * (360 / numCubes)}, 100%, 30%)`),
+                    emissiveIntensity: 0.7, /* Increased emissive intensity */
+                    roughness: 0.3, /* Smoother, more reflective */
+                    metalness: 0.7 /* More metallic */
+                });
+                const cube = new THREE.Mesh(geometry, material);
+
+                const angle = (i / numCubes) * Math.PI * 2;
+                cube.position.x = radius * Math.cos(angle);
+                cube.position.y = (i - numCubes / 2) * 0.3;
+                cube.position.z = radius * Math.sin(angle);
+
+                cubes.push(cube);
+                scene.add(cube);
+            }
+
+            camera.position.z = radius * 1.5;
+            camera.position.y = 1;
+
+            animate3DTimeline();
+        }
+
+        function animate3DTimeline() {
+            requestAnimationFrame(animate3DTimeline);
+
+            cubes.forEach((cube, index) => {
+                cube.rotation.x += 0.01 + Math.sin(Date.now() * 0.0005 + index) * 0.005; /* Subtle varied rotation */
+                cube.rotation.y += 0.01 + Math.cos(Date.now() * 0.0005 + index) * 0.005;
+                const scale = 1 + Math.sin(Date.now() * 0.002 + index * 0.5) * 0.1;
+                cube.scale.set(scale, scale, scale);
+            });
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            const canvas = document.getElementById('timeline-3d-canvas');
+            if (!canvas) return;
+
+            const parent = canvas.parentElement;
+            if (parent) {
+                renderer.setSize(parent.clientWidth, canvas.clientHeight);
+                camera.aspect = parent.clientWidth / canvas.clientHeight;
+                camera.updateProjectionMatrix();
+            }
+        }
+        window.addEventListener('resize', onWindowResize);
+
+        // --- Watch Mode Logic ---
+        let currentWatchMood = 'neutral';
+        let moodChangeInterval = null;
+
+        watchMoodDropdownItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                currentWatchMood = e.target.dataset.mood;
+                currentMoodDropdownWatchBtn.textContent = `Player Feedback: ${e.target.textContent}`;
+                triggerMoodAction('manual_change');
+            });
+        });
+
+        function startMoodChangeSimulation() {
+            if (moodChangeInterval) clearInterval(moodChangeInterval);
+            const moods = ['happy', 'sad', 'excited', 'tense', 'neutral'];
+            moodChangeInterval = setInterval(() => {
+                const newMood = moods[Math.floor(Math.random() * moods.length)];
+                if (newMood !== currentWatchMood) {
+                    currentWatchMood = newMood;
+                    const moodText = document.querySelector(`#currentMoodDropdownWatch + .dropdown-menu a[data-mood="${newMood}"]`).textContent;
+                    currentMoodDropdownWatchBtn.textContent = `Player Feedback: ${moodText}`;
+                    triggerMoodAction('auto_change');
+                }
+            }, 15000);
+        }
+
+        function stopMoodChangeSimulation() {
+            if (moodChangeInterval) {
+                clearInterval(moodChangeInterval);
+                moodChangeInterval = null;
+            }
+        }
+
+        async function triggerMoodAction(actionType) {
+            let prompt = "";
+            let loadingElement = null;
+
+            if (actionType === 'shorten') {
+                prompt = `A playtester's feedback indicates frustration. As Luma AI Playtest Analyst, suggest a design fix or way to simplify a game mechanic. Keep it concise, 1-2 sentences.`;
+                loadingElement = simulateMoodDropBtn;
+            } else if (actionType === 'recommend') {
+                prompt = `Playtesters are hyped! As Luma AI Playtest Analyst, suggest a new game feature or content expansion that would build on this positive feedback. Keep it concise, 1-2 sentences.`;
+                loadingElement = simulateMoodBoostBtn;
+            } else if (actionType === 'auto_change') {
+                prompt = `Player feedback has shifted to ${currentWatchMood}. As Luma AI Playtest Analyst, make a brief, engaging comment about this feedback shift and what it implies for the game's design. Keep it concise, 1-2 sentences.`;
+            } else if (actionType === 'manual_change') {
+                prompt = `The user manually set player feedback to ${currentWatchMood}. As Luma AI Playtest Analyst, acknowledge this and make a brief, engaging comment about this feedback. Keep it concise, 1-2 sentences.`;
+            }
+
+            aiHostCommentDiv.innerHTML = '<strong>Luma AI Playtest Analyst:</strong> <div class="spinner-border spinner-border-sm text-info-custom" role="status"><span class="visually-hidden">Luma AI is thinking...</span></div><span class="ms-2 text-white">Luma AI is thinking...</span>';
+            if (loadingElement) loadingElement.disabled = true;
+
+            const response = await callGeminiAPI(prompt, null, aiHostCommentDiv, loadingElement);
+            if (response) aiHostCommentDiv.innerHTML = `<strong>Luma AI Playtest Analyst:</strong> ${response}`;
+        }
+
+        simulateMoodDropBtn.addEventListener('click', () => triggerMoodAction('shorten'));
+        simulateMoodBoostBtn.addEventListener('click', () => triggerMoodAction('recommend'));
+
+        reactionButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const reactionEmoji = e.target.dataset.reaction;
+                addSimulatedChatMessage(activeRoom.id, 'message', `${currentUserCodename} reacts: ${reactionEmoji}`);
+                showNotification(`You sent a ${reactionEmoji} reaction!`);
+
+                const reactionElement = document.createElement('div');
+                reactionElement.className = 'floating-reaction';
+                reactionElement.textContent = reactionEmoji;
+                
+                const chatInputRect = newChatMessageInput.getBoundingClientRect();
+                reactionElement.style.left = `${chatInputRect.left + (chatInputRect.width / 2) - 20}px`;
+                reactionElement.style.top = `${chatInputRect.top - 10}px`;
+
+                document.body.appendChild(reactionElement);
+
+                reactionElement.addEventListener('animationend', () => {
+                    reactionElement.remove();
+                });
+            });
+        });
+
+        // Playtest Schedule and Voting Logic
+        function renderMovieSchedule() { // Renamed from movieSchedule to playtestSchedule conceptually
+            movieScheduleList.innerHTML = '';
+            movieSchedule.forEach(playtest => {
+                const li = document.createElement('li');
+                li.className = `list-group-item bg-dark text-white border-info d-flex justify-content-between align-items-center mb-2 rounded-3`;
+                li.innerHTML = `
+                    <div>
+                        <strong>${playtest.title}</strong>
+                        <small class="d-block text-muted">Votes: <span id="votes-${playtest.id}">${playtest.votes}</span></small>
+                    </div>
+                    <button class="btn btn-sm btn-outline-success vote-movie-btn" data-movie-id="${playtest.id}">Vote</button>
+                `;
+                movieScheduleList.appendChild(li);
+            });
+
+            document.querySelectorAll('.vote-movie-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const playtestId = e.target.dataset.movieId;
+                    voteForMovie(playtestId);
+                });
+            });
+            updateSelectedMovieInfo();
+        }
+
+        function voteForMovie(playtestId) {
+            const playtest = movieSchedule.find(m => m.id === playtestId);
+            if (playtest) {
+                playtest.votes++;
+                renderMovieSchedule();
+                addSimulatedChatMessage(activeRoom.id, 'message', `${currentUserCodename} voted for playtest "${playtest.title}"!`);
+                showNotification(`You voted for playtest "${playtest.title}"!`);
+            }
+        }
+
+        function updateSelectedMovieInfo() {
+            const mostVotedPlaytest = movieSchedule.reduce((prev, current) => (prev.votes > current.votes) ? prev : current, movieSchedule[0]);
+            if (mostVotedPlaytest) {
+                selectedMovieInfo.textContent = `Most voted playtest: "${mostVotedPlaytest.title}" with ${mostVotedPlaytest.votes} votes.`;
+            } else {
+                selectedMovieInfo.textContent = 'No votes yet.';
+            }
+        }
+
+        playSelectedMovieBtn.addEventListener('click', () => {
+            const mostVotedPlaytest = movieSchedule.reduce((prev, current) => (prev.votes > current.votes) ? prev : current, movieSchedule[0]);
+            if (mostVotedPlaytest && mostVotedPlaytest.url) {
+                youtubeUrlInput.value = mostVotedPlaytest.url;
+                youtubeIframe.src = mostVotedPlaytest.url;
+                addSimulatedChatMessage(activeRoom.id, 'message', `Now starting playtest: "${mostVotedPlaytest.title}" (most voted)!`);
+                showNotification(`Starting playtest "${mostVotedPlaytest.title}"!`);
+            } else {
+                showMessageBox("No playtest selected or URL available to play.");
+                showNotification("Failed to start playtest: No selection or URL.", 5000);
+            }
+        });
+
+        askLoreBtn.addEventListener('click', async () => {
+            const question = loreQuestionInput.value.trim();
+            if (!question) {
+                showMessageBox("Please ask a question for the AI Game Lore Companion.");
+                return;
+            }
+            const prompt = `As an AI Game Lore Companion, answer the following question concisely based on general game development knowledge (since I don't have actual game context): "${question}". If it's a generic question, provide a generic but helpful answer relevant to game design or lore.`;
+            const response = await callGeminiAPI(prompt, null, loreOutputDiv, askLoreBtn);
+            if (response) loreOutputDiv.textContent = response;
+            loreQuestionInput.value = '';
+        });
+
+        voteSpeedUpBtn.addEventListener('click', () => {
+            playbackVoteStatusDiv.textContent = `${currentUserCodename} voted to Speed Up Review.`;
+            addSimulatedChatMessage(activeRoom.id, 'message', `${currentUserCodename} voted to speed up review!`);
+            showNotification(`Voted to speed up playtest review!`);
+        });
+        voteSlowDownBtn.addEventListener('click', () => {
+            playbackVoteStatusDiv.textContent = `${currentUserCodename} voted to Slow Down Review.`;
+            addSimulatedChatMessage(activeRoom.id, 'message', `${currentUserCodename} voted to slow down review!`);
+            showNotification(`Voted to slow down playtest review!`);
+        });
+        voteNextEpisodeBtn.addEventListener('click', () => {
+            playbackVoteStatusDiv.textContent = `${currentUserCodename} voted for Next Build.`;
+            addSimulatedChatMessage(activeRoom.id, 'message', `${currentUserCodename} voted for the next build!`);
+            showNotification(`Voted for the next game build!`);
+        });
+
+        generateSummaryBtn.addEventListener('click', async () => {
+            const prompt = `Generate a short, engaging summary for a hypothetical game playtest session about [insert a common game genre like 'RPG combat' or 'platformer level design']. Make it sound like a generative AI produced it, highlighting key findings.`;
+            const response = await callGeminiAPI(prompt, null, generativeContentOutputDiv, generateSummaryBtn);
+            if (response) generativeContentOutputDiv.textContent = `Playtest Summary: ${response}`;
+        });
+
+        generateCreditsBtn.addEventListener('click', async () => {
+            const prompt = `Generate a short, creative closing credits sequence draft for a hypothetical game, including game development roles like 'Lead Pixel Alchemist', 'Code Sorcerer', 'Level Architect AI', 'Sound Weaver', and 'Community Co-Creator'.`;
+            const response = await callGeminiAPI(prompt, null, generativeContentOutputDiv, generateCreditsBtn);
+            if (response) generativeContentOutputDiv.textContent = `Game Credits Draft: ${response}`;
+        });
+
+        sendMessageBtn.addEventListener('click', sendMessage);
+        newChatMessageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+        
+        youtubeUrlInput.addEventListener('change', () => {
+            const url = youtubeUrlInput.value;
+            const regExp = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|v\/|)([\w-]{11})(?:\S+)?/;
+            const match = url.match(regExp);
+            if (match) {
+                youtubeIframe.src = `https://www.youtube.com/embed/${match[1]}?autoplay=1`;
+                showNotification("Playtest video URL updated!");
+            } else {
+                showMessageBox("Invalid YouTube URL. Please enter a valid YouTube video URL for playtest.");
+                youtubeIframe.src = '';
+                showNotification("Invalid YouTube URL!", 5000);
+            }
+        });
+
+        // --- Build Mode Logic ---
+        executeCommandBtn.addEventListener('click', async () => {
+            const command = commandInput.value.trim();
+            const aiPersona = aiPersonaSelect.value;
+            const aiSkill = aiSkillSelect.value;
+
+            if (!command) {
+                showMessageBox("Please enter a command for the AI Dev Sidekick.");
+                return;
+            }
+
+            const prompt = `As an AI game development sidekick with a "${aiPersona}" persona and focused on "${aiSkill}" skills, respond to the following game dev command/request: "${command}". Provide a helpful and concise output, simulating a creative tool's response. Examples: "Suggest 3 character archetypes for a fantasy RPG.", "Outline a plot twist for a sci-fi game thriller.", "Brainstorm alternative titles for a horror game named 'The Whispering Woods'."`;
+            const response = await callGeminiAPI(prompt, null, aiSidekickOutputDiv, executeCommandBtn);
+            if (response) aiSidekickOutputDiv.innerHTML = response;
+            commandInput.value = '';
+        });
+
+        // Coding Terminal Logic
+        runCodeBtn.addEventListener('click', async () => {
+            const codeInput = codingTerminalInput.value.trim();
+            if (!codeInput) {
+                showMessageBox("Please enter some code or a command in the terminal.");
+                return;
+            }
+
+            codingTerminalOutput.innerHTML += `<pre>> ${codeInput}</pre>`;
+            codingTerminalOutput.innerHTML += `<pre>Luma AI is compiling...</pre>`;
+            codingTerminalOutput.scrollTop = codingTerminalOutput.scrollHeight;
+            showNotification("Running code in terminal...");
+
+            const prompt = `Simulate the output of this game development code snippet or command. If it's programming code, provide a plausible output. If it's a creative command, provide a creative interpretation or result. Keep the output concise and terminal-like. Input: "${codeInput}"`;
+            const response = await callGeminiAPI(prompt, null, codingTerminalOutput, runCodeBtn);
+            if (response) {
+                codingTerminalOutput.innerHTML = codingTerminalOutput.innerHTML.replace('<pre>Luma AI is compiling...</pre>', '');
+                codingTerminalOutput.innerHTML += `<pre>${response}</pre>`;
+                showNotification("Terminal output generated!");
+            } else {
+                codingTerminalOutput.innerHTML = codingTerminalOutput.innerHTML.replace('<pre>Luma AI is compiling...</pre>', '');
+                codingTerminalOutput.innerHTML += `<pre>Error: Could not simulate output.</pre>`;
+            }
+            codingTerminalOutput.scrollTop = codingTerminalOutput.scrollHeight;
+        });
+
+        clearTerminalBtn.addEventListener('click', () => {
+            codingTerminalOutput.innerHTML = `<pre>Luma Dev Terminal v1.0.0</pre><pre>Ready for your game dev commands...</pre>`;
+            showNotification("Terminal cleared.");
+        });
+
+        // --- Pre-made Projects Data ---
+        const premadeProjectsData = {
+            'game_concept': {
+                name: "AI-Driven Game Concept: 'Chronoscape Explorers'",
+                description: "A cooperative puzzle-platformer set in a bioluminescent alien jungle. Players manipulate time and environment to solve puzzles.",
+                initialPrompt: "Design a core loop for 'Chronoscape Explorers': a co-op puzzle-platformer in a bioluminescent alien jungle. Players manipulate time and environment. Focus on unique mechanics. [image: bioluminescent jungle, ancient ruins] [sound: ambient jungle, time-distortion effects]",
+                initialCommand: "Suggest 3 unique time-manipulation mechanics for 'Chronoscape Explorers'.",
+                initialCode: `// Project: Chronoscape Explorers - Core Mechanics\n// Genre: Co-op Puzzle Platformer\n// Setting: Bioluminescent Alien Jungle\n// Core Mechanics: Time manipulation, Environmental interaction\n\nfunction defineTimeMechanic(concept) {\n  console.log(\`New time mechanic idea: \${concept}\`);\n}\n\ndefineTimeMechanic("Rewind small objects to past states.");\ndefineTimeMechanic("Slow down time for precise platforming.");\ndefineGameMechanic("${currentUserCodename}", "Temporal echo clones for puzzle solving.");`,
+                initialAISidekickOutput: "Welcome to 'Chronoscape Explorers'! Let's define the core gameplay loop. How can time manipulation be integrated with environmental puzzles to create truly unique challenges for our players?"
+            },
+            'screenplay_outline': {
+                name: "Collaborative Game Narrative: 'Echoes of the Void'",
+                description: "A sci-fi thriller RPG where players investigate a mysterious signal, uncovering a cosmic horror conspiracy.",
+                initialPrompt: "Outline Act I of 'Echoes of the Void': a sci-fi thriller RPG. Establish a mysterious signal from deep space. Player investigates, faces unforeseen danger. Brainstorm key plot points for opening cutscenes and early quests. [image: derelict spaceship, cosmic anomaly] [sound: eerie silence, distorted whispers]",
+                initialCommand: "Brainstorm 3 compelling character motivations for joining the expedition in 'Echoes of the Void'.",
+                initialCode: `// Project: Echoes of the Void - Narrative Outline\n// Genre: Sci-Fi Thriller RPG\n// Act I: The Signal - Setup\n// Plot Points:\nconsole.log("Plot Point 1: Player's deep-space probe detects an anomalous, repeating energy signature.");\nconsole.log("Plot Point 2: Player receives a fragmented, desperate distress call from a long-lost research vessel.");\nconsole.log("Plot Point 3: Player's crew debates investigating, but the lure of discovery (or profit) wins out.");\nconsole.log("Plot Point 4: Initial investigation of the source reveals unsettling, non-Euclidean structures.");`,
+                initialAISidekickOutput: "Alright, narrative architects! For 'Echoes of the Void', let's craft an opening that hooks players immediately. How can we build suspense around the mysterious signal and foreshadow the cosmic horror to come?"
+            },
+            'generative_art': {
+                name: "Generative Game Asset Series: 'Neo-Tokyo Overgrowth'",
+                description: "A series of procedural 3D assets blending cyberpunk cityscapes with reclaiming nature, for a dystopian open-world game.",
+                initialPrompt: "Define parameters for a generative game asset series: 'Neo-Tokyo Overgrowth'. Blend cyberpunk cityscapes with reclaiming nature. Focus on color palettes (neon, moss green), algorithms (fractal growth, cellular automata for decay), and desired mood (serene yet chaotic). [image: cyberpunk city, overgrown buildings] [style: synthwave, post-apocalyptic]",
+                initialCommand: "Generate a JSON configuration for a 'Neo-Tokyo Overgrowth' building asset, including material properties and growth parameters.",
+                initialCode: `// Project: Neo-Tokyo Overgrowth - Generative Assets\n// Theme: Cyberpunk city reclaiming nature\n// Target: 3D environment assets\n\nconst assetConfig = {\n  theme: "Urban Nature",\n  style: "Cyberpunk Dystopian",\n  palette: ["#00FFFF", "#00FF00", "#FF00FF", "#333333", "#8A2BE2"],\n  algorithm: "Procedural Building & Vine Growth",\n  mood: "Ethereal, Overgrown, Melancholic",\n  parameters: {\n    buildingHeightRange: [10, 50],\n    vineDensity: 0.7,\n    neonGlowIntensity: 0.8\n  }\n};\n\nfunction generateAsset(config) {\n  console.log(\`Generating asset for '\${config.theme}' with style '\${config.style}'.\`);\n  console.log(\`Using algorithm: \${config.algorithm}\`);\n  console.log("Configuration:", JSON.stringify(config, null, 2));\n}\n\ngenerateAsset(assetConfig);`,
+                initialAISidekickOutput: "Welcome to 'Neo-Tokyo Overgrowth'! Let's define the visual language for our generative assets. How can we make the blend of technology and nature feel both beautiful and unsettling for our game world?"
+            },
+            'poetry_generator': {
+                name: "AI In-Game Dialogue Generator: 'Whispers of Eldoria'",
+                description: "A system for generating dynamic, context-aware dialogue and lore snippets for an fantasy RPG, adaptable to player choices.",
+                initialPrompt: "Generate a system for 'Whispers of Eldoria': an AI In-Game Dialogue Generator. Focus on dynamic, context-aware dialogue and lore snippets for an fantasy RPG. Adapt to player choices. Suggest a mood (e.g., ancient, hopeful, mischievous) and a subject (e.g., 'ancient prophecy', 'character's inner thoughts', 'NPC gossip').",
+                initialCommand: "Provide 3 examples of dialogue snippets for an ancient, wise NPC in 'Whispers of Eldoria' discussing a forgotten prophecy.",
+                initialCode: `// Project: Whispers of Eldoria - Dialogue System\n// Goal: Generate dynamic in-game dialogue and lore\n// Genre: Fantasy RPG\n\nconst dialogueConfig = {\n  mood: "Ancient, Mystical",\n  subject: "Forgotten Prophecy",\n  context: "Player approaches the Elder of Silverwood Grove.",\n  npc: "Elder Lyra"\n};\n\nfunction generateDialogue(config) {\n  console.log(\`AI generating dialogue for \${config.npc} about \${config.subject}...\`);\n  console.log("Context:", config.context);\n}\n\ngenerateDialogue(dialogueConfig);`,
+                initialAISidekickOutput: "Narrative designers, let's bring our game world to life through dialogue! For 'Whispers of Eldoria', how can we ensure our AI-generated conversations feel natural, impactful, and responsive to player actions?"
+            },
+            'music_loop_creator': {
+                name: "Game Ambient Music Loop Creator: 'Cosmic Drift'",
+                description: "Designing 10-second ambient music loops for various celestial environments in a space exploration game.",
+                initialPrompt: "Create a 10-second ambient music loop for 'Cosmic Drift': a space exploration game. Focus on a specific celestial environment (e.g., 'nebula field', 'asteroid belt', 'deep space void'). Specify instruments (e.g., 'synthesizer pads', 'gentle piano', 'subtle percussion') and tempo (e.g., 'slow', 'moderate', 'fast'). [sound: sci-fi ambience, ethereal synth]",
+                initialCommand: "Generate a JSON structure for a 'Cosmic Drift' music loop, including instrument layers, tempo, and mood descriptors.",
+                initialCode: `// Project: Cosmic Drift - Music Loop Creator\n// Goal: Generate 10-second ambient loops for game levels\n// Genre: Space Exploration\n\nconst musicLoopConfig = {\n  area: "Nebula Field",\n  instruments: ["Ethereal Synthesizer Pads", "Distant Chimes", "Subtle Bass Drone"],\n  tempo: "Slow",\n  mood: "Mysterious, Vast, Calm",\n  duration: "10 seconds"\n};\n\nfunction generateMusicLoop(config) {\n  console.log(\`AI generating a \${config.tempo} loop for \${config.area} with \${config.instruments.join(' and ')}...\`);\n  console.log("Configuration:", JSON.stringify(config, null, 2));\n}\n\ngenerateMusicLoop(musicLoopConfig);`,
+                initialAISidekickOutput: "Sound designers, let's craft the sonic tapestry for 'Cosmic Drift'! For our ambient loops, consider how the music can enhance the player's sense of wonder and isolation in the vastness of space."
+            },
+            'character_design_brief': {
+                name: "Game Character Design Brief: 'The Chrono-Paladin'",
+                description: "A collaborative brief for a fantasy game character: a time-bending paladin with unique abilities and a compelling backstory.",
+                initialPrompt: "Design a collaborative fantasy game character: 'The Chrono-Paladin'. Brief the AI on their appearance (e.g., 'knight with glowing temporal armor'), personality (e.g., 'stoic but burdened by time'), and a unique game ability (e.g., 'can create temporal duplicates'). [image: knight, glowing armor, time effects] [lore: ancient order, paradoxes]",
+                initialCommand: "Describe 3 distinct combat abilities for 'The Chrono-Paladin' that utilize time manipulation.",
+                initialCode: `// Project: The Chrono-Paladin - Character Design\n// Goal: Design a fantasy game character\n// Role: Paladin, Time-bender\n\nconst characterBrief = {\n  name: "The Chrono-Paladin",\n  appearance: "Knight in ornate, glowing temporal armor with a rift-scarred shield.",\n  personality: "Stoic, burdened by the weight of temporal paradoxes, fiercely protective of the timeline.",\n  uniqueAbility: "Can create temporal duplicates of themselves to distract or attack enemies.",\n  backstoryKeywords: ["Ancient Order", "Forbidden Knowledge", "Temporal Anomaly", "Sacrifice"]\n};\n\nfunction designGameCharacter(brief) {\n  console.log("AI designing game character based on brief...");\n  console.log("Character Brief:", JSON.stringify(brief, null, 2));\n}\n\ndesignGameCharacter(characterBrief);`,
+                initialAISidekickOutput: "Artists and game designers, let's bring 'The Chrono-Paladin' to life! How can we visually convey their mastery over time and their heavy burden, making them a memorable figure in our game?"
+            }
+        };
+
+        // Pre-made Projects Logic
+        premadeProjectsList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('open-project-btn')) {
+                const projectId = e.target.dataset.projectId;
+                const project = premadeProjectsData[projectId];
+
+                if (project) {
+                    multimodalPromptInput.value = project.initialPrompt;
+                    commandInput.value = project.initialCommand;
+                    codingTerminalInput.value = project.initialCode.replace("${currentUserCodename}", currentUserCodename); // Inject codename
+                    aiSidekickOutputDiv.innerHTML = project.initialAISidekickOutput;
+
+                    // Clear previous outputs for a fresh start
+                    storyOutputDiv.innerHTML = `Your AI-assisted game concept or lore for "${project.name}" will appear here.`;
+                    codingTerminalOutput.innerHTML = `<pre>Luma Dev Terminal v1.0.0</pre><pre>Ready for your game dev commands...</pre>`;
+                    loreOutputDiv.textContent = '';
+                    generativeContentOutputDiv.textContent = '';
+                    playbackVoteStatusDiv.textContent = '';
+                    simulatedVotesDiv.textContent = '';
+                    branchingOptionsContainer.style.display = 'none'; // Hide branching options until new generation
+
+                    showMessageBox(`Game Project "${project.name}" loaded! Check the Design Mode, Dev AI Mode, and Coding Terminal for details.`);
+                    showNotification(`Game Project "${project.name}" loaded!`);
+                    
+                    showView('build-mode-view'); // Default to build mode when loading a project
+                    setActiveModeButton('build');
+                } else {
+                    showMessageBox("Project data not found for this ID.");
+                    showNotification("Error: Project not found!", 5000);
+                }
+            }
+        });
+
+        // 3D Room Features buttons
+        teleportBtn.addEventListener('click', () => {
+            showMessageBox("Simulating teleportation! Imagine instantly moving to another biome or level section in your game world.");
+            showNotification("Teleporting to a new game area!");
+        });
+
+        roomSkinGenBtn.addEventListener('click', () => {
+            showMessageBox("Generating a new dev environment skin! Imagine the AI dynamically customizing your 3D workspace based on your game's theme (e.g., 'cyberpunk dev hub').");
+            showNotification("New dev environment skin generated!");
+        });
+
+        memoryCapsuleBtn.addEventListener('click', () => {
+            showMessageBox("Accessing a past dev session! Imagine replaying a previous collaborative design meeting or playtest in a full 3D environment.");
+            showNotification("Past dev session accessed!");
+        });
+    </script>
+</body>
+</html>
